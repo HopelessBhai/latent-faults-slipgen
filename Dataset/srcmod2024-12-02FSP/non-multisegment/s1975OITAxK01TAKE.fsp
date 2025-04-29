@@ -1,0 +1,59 @@
+% ----------------------------------  FINITE-SOURCE RUPTURE MODEL  --------------------------------
+% 
+% Event : Oita-ken-chubu (Japan) 		04/21/1975 		[Takeo (1990) ] 
+% EventTAG: s1975OITAxK01TAKE
+% 
+% Loc  : LAT  = 33.15 		LON = 131.3		DEP = 8.5
+% Size : LEN  = 10.0 km 	WID =  10.0 km		Mw = 6.36	Mo = 3.84e+18 Nm
+% Mech : STRK = 305.0		DIP = 88.0		RAKE = 30.0	Htop = 0.6666666699999997 km 
+% Rupt : HypX = 8.33 km 	HypZ = 8.33 km 		avTr = 3.0 s	avVr = -99.0 km/s 
+% 
+% ----------------------------------  inversion-related parameters  --------------------------------
+% 
+% Invs :  Nx  =  3 	Nz  = 3 	Fmin = 0.00 Hz 	Fmax = 0.50 Hz 
+% Invs :  Dx  =  3.33 km 	Dz  = 3.33 km 
+% Invs :  Ntw =  1	Nsg =  1 			(# of time-windows,# of fault segments) 
+% Invs :  LEN =  3.0 s	SHF =  0.0 s 		(time-window length and time-shift) 
+% SVF  :  parab.ramp 					(type of slip-velocity function used) 
+% 
+% Data :  	SGM 	TELE 	TRIL 	LEVEL 	GPS 	INSAR 	SURF 	OTHER
+% Data :  	7 	9 	0 	0 	0 	0 	0 	0
+% PHImx:  	105 	97 	0 	0 	0 	0 	0 	0
+% Rmin : 	30.0	20.0	0.0	0.0	0.0	0.0	0.0	0.0
+% 
+% --------------------------------------------------------------------------------------------------
+% 
+% VELOCITY-DENSITY STRUCTURE 
+% No.  of layers =  6 
+% 
+%	DEPTH	P-VEL	S-VEL	DENS	QP	QS
+%	[km]	[km/s]	[km/s]	[g/cm^3]  
+%       0.00      3.50      2.00      2.40    150.00     80.00
+%       2.00      5.80      3.35      2.65    300.00    150.00
+%      18.00      5.90      3.41      2.66    300.00    150.00
+%      20.00      6.20      3.58      2.73    300.00    150.00
+%      28.00      6.55      3.73      2.90    500.00    250.00
+%      37.00      7.90      4.56      3.50   1000.00    500.00
+% 
+% --------------------------------------------------------------------------------------------------
+% 23-Jul-2007 PMM (mai@sed.ethz.ch) 
+% --------------------------------------------------------------------------------------------------
+% 
+% SOURCE MODEL PARAMETERS 
+% 	Nsbfs = 9 subfaults 
+% 		X,Y,Z coordinates in km; SLIP in m 
+% 		if applicable: RAKE in deg, RISE in s, TRUP in s, slip in each TW in m 
+% 
+%   Coordinates are given for top-center of each subfault or segment: |'| 
+%   Origin of local coordinate system at epicenter: X (EW) = 0,  Y (NS) = 0  
+%    LAT       LON       X==EW       Y==NS       Z       SLIP       TRUP     
+% -------------------------------------------------------------------------------------------------- 
+   33.1134  131.3569    5.2942   -4.0621    0.6667    1.6000    7.2500  
+   33.1307  131.3276    2.5637   -2.1502    0.6667    0.5000    5.5000  
+   33.1479  131.2982   -0.1668   -0.2382    0.6667    1.0000    3.0000  
+   33.1143  131.3576    5.3609   -3.9668    3.9980    0.6000    6.7500  
+   33.1315  131.3283    2.6304   -2.0549    3.9980    0.4000    4.7500  
+   33.1487  131.2989   -0.1001   -0.1429    3.9980    1.7000    2.2500  
+   33.1152  131.3583    5.4277   -3.8715    7.3293    2.5000    4.5000  
+   33.1324  131.3290    2.6971   -1.9596    7.3293    2.3000    1.2500  
+   33.1496  131.2996   -0.0334   -0.0476    7.3293    0.9000    0.0000  

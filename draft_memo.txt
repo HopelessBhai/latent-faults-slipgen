@@ -1,0 +1,31 @@
+- intro
+
+1. plot world map with the earthquake points. - fig
+2. distribution of the data - fig
+3. explain the un-evenness in data - fig
+4. table describing the stats - table
+
+- literature review
+
+- experimentation (w.r.t all the steps)
+
+5. mindmap of experiments done - fig
+6. table with adv and disadvantages of experiments done - table
+
+- methodology
+7. flowchart of final pipeline - recons. - fig
+8. "	" - full pipeline - fig
+9. optimization = mse + l1 + clip - 
+
+- result
+
+10. reconstruction plot (gauss) - fig
+11. loss plots
+12. hyperparameters and tuning - table
+13. 4 pairs of original and reconstructed
+
+- conclusion
+
+- future 
+14. bad subplots - 2 pairs - fig
+15. figure talking about way further - fig

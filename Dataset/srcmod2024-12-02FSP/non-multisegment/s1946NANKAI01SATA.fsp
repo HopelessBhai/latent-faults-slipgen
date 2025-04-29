@@ -1,0 +1,57 @@
+% ----------------------------------  FINITE-SOURCE RUPTURE MODEL  --------------------------------
+% 
+% Event : Nankaido (Japan) 		12/20/1946 		[Satake (1993) ] 
+% EventTAG: s1946NANKAI01SATA
+% 
+% Loc  : LAT  = 33.03 		LON = 135.62		DEP = 30.0
+% Size : LEN  = 360.0 km 	WID =  180.0 km		Mw = 8.31	Mo = 3.31e+21 Nm
+% Mech : STRK = 250.0		DIP = 10.0		RAKE = 120.0	Htop = 5.0 km 
+% Rupt : HypX = 90.00 km 	HypZ = 40.00 km 		avTr = 0.0 s	avVr = 0.0 km/s 
+% 
+% ----------------------------------  inversion-related parameters  --------------------------------
+% 
+% Invs :  Nx  =  4 	Nz  = 3 	Fmin = 0.00 Hz 	Fmax = 0.00 Hz 
+% Invs :  Dx  =  90.00 km 	Dz  = 60.00 km 
+% Invs :  Ntw =  0	Nsg =  1 			(# of time-windows,# of fault segments) 
+% Invs :  LEN =  0.0 s	SHF =  0.0 s 		(time-window length and time-shift) 
+% SVF  :  geodetic model 					(type of slip-velocity function used) 
+% 
+% Data :  	SGM 	TELE 	TRIL 	LEVEL 	GPS 	INSAR 	SURF 	OTHER
+% Data :  	0 	0 	999 	999 	0 	0 	0 	999
+% PHImx:  	0 	0 	999 	999 	0 	0 	0 	0 	999
+% Rmin : 	0.0	0.0	999.0	999.0	0.0	0.0	0.0	0.0	999.0
+% 
+% --------------------------------------------------------------------------------------------------
+% 
+% VELOCITY-DENSITY STRUCTURE 
+% No. of layers =   1 
+% 
+% Crustal Model unknown for this model; 
+% See the refernce 
+% 999 
+% 
+% --------------------------------------------------------------------------------------------------
+% 23-Jul-2007 PMM (mai@sed.ethz.ch) 
+% --------------------------------------------------------------------------------------------------
+% 
+% SOURCE MODEL PARAMETERS 
+% 	Nsbfs = 12 subfaults 
+% 		X,Y,Z coordinates in km; SLIP in m 
+% 		if applicable: RAKE in deg, RISE in s, TRUP in s, slip in each TW in m 
+% 
+%   Coordinates are given for top-center of each subfault or segment: |'| 
+%   Origin of local coordinate system at epicenter: X (EW) = 0,  Y (NS) = 0  
+%    LAT       LON       X==EW       Y==NS       Z       SLIP     
+% -------------------------------------------------------------------------------------------------- 
+   32.8354  136.2185   55.7591  -21.6258    5.0000    2.0100  
+   32.5584  135.3107  -28.8132  -52.4076    5.0000    1.9500  
+   32.2814  134.4029 -113.3855  -83.1894    5.0000    1.7400  
+   32.0043  133.4951 -197.9579 -113.9712    5.0000    0.0100  
+   33.3351  136.0016   35.5497   33.8992   15.4189    1.3100  
+   33.0581  135.0938  -49.0226    3.1174   15.4189    1.4700  
+   32.7810  134.1860 -133.5950  -27.6644   15.4189    1.7700  
+   32.5040  133.2782 -218.1673  -58.4462   15.4189    1.3500  
+   33.8348  135.7847   15.3402   89.4242   25.8378    0.0000  
+   33.5577  134.8769  -69.2321   58.6424   25.8378    0.4600  
+   33.2807  133.9691 -153.8044   27.8606   25.8378    2.4100  
+   33.0037  133.0612 -238.3768   -2.9212   25.8378    0.4800  

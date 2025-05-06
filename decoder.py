@@ -6,6 +6,7 @@ from PIL import Image
 import os
 import pickle
 from image_embedder import VQVAE  # Assumes PyTorch model is here
+from assets.utils import save_metrics_for_image
 
 class Decoder(nn.Module):
     def __init__(self, model_weights_path, device="cpu"):
@@ -34,7 +35,7 @@ class Decoder(nn.Module):
         decoded = self.model.decoder(latent)
         return decoded
 
-    def visualize_prediction(self, decoded_image, true_image_path=None, save_path=None):
+    def visualize_prediction(self, decoded_image,true_image_path=None, save_path=None):
         """
         Visualize the decoded image vs. ground truth.
         """
@@ -45,6 +46,15 @@ class Decoder(nn.Module):
         plt.imshow(decoded_image[0, 0].detach().cpu().numpy(), cmap='seismic_r')
         plt.title("Decoded Image")
         plt.axis("off")
+
+        # print(true_image_path)
+        metrics_json_path=r'test_metrics.json'
+
+        if true_image_path and metrics_json_path:
+            save_metrics_for_image(decoded_image,
+                               true_image_path,
+                               metrics_json_path)
+        
         if true_image_path:
             true_image = Image.open(true_image_path).convert('L').resize((50,50))
             plt.subplot(1, 2, 2)

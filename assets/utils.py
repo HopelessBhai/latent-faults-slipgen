@@ -8,6 +8,11 @@ import tensorflow as tf
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
+from PIL import Image
+import json
+from skimage.metrics import structural_similarity as sk_ssim      # SSIM
+# import piq                                                        # VIF-P
+from scipy.stats import wasserstein_distance, entropy                   # 1-D EMD
 
 
 def plot_losses(train_losses, val_losses, save_path=None):
@@ -113,3 +118,128 @@ def display_image(image):
     plt.title("Reconstructed Image")
     plt.axis("off")
     plt.show()
+
+
+
+def _to_numpy(img):
+    """
+    Accepts a PyTorch tensor, PIL.Image, or ndarray and returns a float32
+    ndarray ∈ [0, 1] with shape (H, W).
+    """
+    if isinstance(img, torch.Tensor):
+        img = img.detach().cpu().numpy()
+        if img.ndim == 4:            # (B,C,H,W) → take first B,C
+            img = img[0, 0]
+        elif img.ndim == 3:          # (C,H,W)
+            img = img[0]
+    elif isinstance(img, Image.Image):
+        img = np.asarray(img)
+    img = img.squeeze().astype(np.float32)
+    if img.max() > 1.0:              # assume 8-bit
+        img /= 255.0
+    return img
+
+
+def _histogram(arr, bins=256):
+    """
+    Returns a probability histogram (shape = (bins,)) for an image array
+    assumed to be in [0, 1].
+    """
+    h, _ = np.histogram(arr, bins=bins, range=(0.0, 1.0), density=False)
+    h = h.astype(np.float64)
+    h /= h.sum() + 1e-12             # add ε to avoid division by zero
+    return h
+
+
+# -------------------------- distribution metrics -----------------------------
+def _js_divergence(p, q, base=2):
+    """
+    Jensen–Shannon divergence (bounded 0…1 when base=2).
+    """
+    m = 0.5 * (p + q)
+    return 0.5 * entropy(p, m, base=base) + 0.5 * entropy(q, m, base=base)
+
+
+def _overlap_index(p, q):
+    """
+    Histogram overlap index = Σ min(pᵢ, qᵢ)  (a.k.a. intersection coefficient).
+    Range 0…1 (1 = identical distributions).
+    """
+    return float(np.minimum(p, q).sum())
+
+
+def compute_image_metrics(decoded_img,
+                          target_img,
+                          *,
+                          bins: int = 256):
+    """
+    Returns a dict with **EMD, JSD, and Overlap Index** for one image pair.
+
+    decoded_img : torch.Tensor | np.ndarray | PIL.Image
+    target_img  : torch.Tensor | np.ndarray | PIL.Image
+    """
+    dec = _to_numpy(decoded_img)
+    gt  = _to_numpy(target_img)
+
+    # 1. Earth-Mover’s Distance (1-D)
+    emd_val = wasserstein_distance(gt.flatten(), dec.flatten())
+
+    # 2. Histogram-based metrics
+    p = _histogram(gt, bins=bins)
+    q = _histogram(dec, bins=bins)
+
+    jsd_val = _js_divergence(p, q)          # 0 … 1   (lower is better)
+    ovl_val = _overlap_index(p, q)          # 0 … 1   (higher is better)
+
+    mse_val = float(np.mean((gt - dec) ** 2))
+    psnr = float(10 * np.log10(1.0 / mse_val))  # Peak Signal-to-Noise Ratio
+
+    return {
+        "emd":  float(emd_val),
+        "jsd":  float(jsd_val),
+        "overlap": float(ovl_val),
+        "mse": float(mse_val),
+        "psnr": psnr,
+    }
+
+
+# --------------------------- JSON persistence --------------------------------
+def _update_metrics_json(entry_key: str,
+                         metrics_dict: dict,
+                         json_path: str) -> None:
+    """
+    Append/overwrite metrics for `entry_key` in `json_path`.
+    Creates parent dirs only if the file lives inside a directory.
+    """
+    dir_name = os.path.dirname(json_path)
+    if dir_name:
+        os.makedirs(dir_name, exist_ok=True)
+
+    if os.path.isfile(json_path):
+        with open(json_path, "r") as f:
+            data = json.load(f)
+    else:
+        data = {}
+
+    data[entry_key[24:-8]] = metrics_dict
+
+    with open(json_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+def save_metrics_for_image(decoded_img,
+                           true_image_path: str,
+                           json_metrics_path: str,
+                           *,
+                           bins: int = 256):
+    """
+    Convenience wrapper:  load ground-truth, compute metrics,
+    and store them under the key  os.path.basename(true_image_path).
+    """
+    gt_img = Image.open(true_image_path).convert("L").resize((50, 50))
+
+    metrics = compute_image_metrics(decoded_img, gt_img, bins=bins)
+    _update_metrics_json(os.path.basename(true_image_path),
+                         metrics,
+                         json_metrics_path)
+    return metrics

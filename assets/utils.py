@@ -244,13 +244,14 @@ def save_metrics_for_image(decoded_img,
                          json_metrics_path)
     return metrics
 
-def pixels_to_slip(image,delta_z):
+def pixels_to_slip(image,delta_z,plot=False):
 
     """
     Converts pixel values in an image to slip values using a normalizing slip range.
 
-    Input: image (numpy array) - The input image with pixel values.
-           delta_z (float) - The scaling value for z axis used (Dz).
+    Input:  image (numpy array) - The input image with pixel values.
+            delta_z (float) - The scaling value for z axis used (Dz).
+            plot (bool) - If True, the function will plot the slip valued image.
 
     Output: slip_valued_image (numpy array) - The image with pixel values converted to slip values.
 
@@ -258,5 +259,16 @@ def pixels_to_slip(image,delta_z):
 
     normalizing_slip_range=np.load(r"./assets/normalizing_slip_range.npy",allow_pickle=True)
     slip_valued_image = (image *normalizing_slip_range)/delta_z
+
+    if plot:
+        # Step 5: Visualize the image.
+        plt.figure(figsize=(8, 6))
+        plt.imshow(slip_valued_image,
+                origin='lower', cmap='viridis')
+        plt.colorbar(label='Slip Intensity')
+        plt.title(f"Interpolated Slip Image (Integer Pixel Grid)")
+        plt.xlabel("ES (centered)")
+        plt.ylabel("NS (centered)")
+        plt.show()
 
     return slip_valued_image

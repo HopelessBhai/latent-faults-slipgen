@@ -243,3 +243,20 @@ def save_metrics_for_image(decoded_img,
                          metrics,
                          json_metrics_path)
     return metrics
+
+def pixels_to_slip(image,delta_z):
+
+    """
+    Converts pixel values in an image to slip values using a normalizing slip range.
+
+    Input: image (numpy array) - The input image with pixel values.
+           delta_z (float) - The scaling value for z axis used.
+
+    Output: slip_valued_image (numpy array) - The image with pixel values converted to slip values.
+
+    """
+
+    normalizing_slip_range=np.load("normalizing_slip_range.npy")
+    slip_valued_image = (image *normalizing_slip_range)/delta_z
+    
+    return slip_valued_image

@@ -250,7 +250,7 @@ def pixels_to_slip(image,delta_z):
     Converts pixel values in an image to slip values using a normalizing slip range.
 
     Input: image (numpy array) - The input image with pixel values.
-           delta_z (float) - The scaling value for z axis used.
+           delta_z (float) - The scaling value for z axis used (Dz).
 
     Output: slip_valued_image (numpy array) - The image with pixel values converted to slip values.
 

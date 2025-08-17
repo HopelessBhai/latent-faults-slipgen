@@ -272,3 +272,23 @@ def pixels_to_slip(image,delta_z,plot=False):
         plt.show()
 
     return slip_valued_image
+
+def save_slip_images (slip_valued_image, save_path):
+    """
+    Saves the slip valued image as a PNG file with Slip Intensity.
+
+    Input:  slip_valued_image (numpy array) - The image with pixel values converted to slip values.
+            save_path (str) - The path where the image will be saved.
+    Output: None
+
+    """
+    plt.figure(figsize=(6,6))
+    plt.imshow(slip_valued_image, cmap='viridis', origin='lower')  # example
+    plt.colorbar(label="Slip Intensity")
+    plt.title("Interpolated Slip Image (Integer Pixel Grid)")
+    plt.xlabel("ES (centered)")
+    plt.ylabel("NS (centered)")
+
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    

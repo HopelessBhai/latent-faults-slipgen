@@ -256,7 +256,7 @@ def pixels_to_slip(image,delta_z):
 
     """
 
-    normalizing_slip_range=np.load("normalizing_slip_range.npy")
+    normalizing_slip_range=np.load(r"./assets/normalizing_slip_range.npy",allow_pickle=True)
     slip_valued_image = (image *normalizing_slip_range)/delta_z
-    
+
     return slip_valued_image

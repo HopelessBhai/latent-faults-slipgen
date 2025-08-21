@@ -1,1 +1,1 @@
-LatentFaults: Generative Modeling of Earthquake Ruptures from Sparse Parameters
+#LatentFaults: Generative Modeling of Earthquake Ruptures from Sparse Parameters

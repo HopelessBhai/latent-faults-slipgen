@@ -103,22 +103,22 @@ class VQVAE(nn.Module):
         self.num_embeddings = num_embeddings
         self.beta = beta
 
-        # Encoder: converts a (1, 28, 28) image to a latent representation (latent_dim, 7, 7)
+        # Encoder: converts a (1, 50, 50) image to a latent representation (latent_dim, 13, 13)
         # Progressive downsampling through convolutional layers
         self.encoder = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, stride=2, padding=1),  # 28->14
+            nn.Conv2d(1, 32, kernel_size=3, stride=2, padding=1),  # 50->25
             nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),  # 14->7
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),  # 25->13
             nn.ReLU(),
             nn.Conv2d(64, latent_dim, kernel_size=1, stride=1, padding=0)  # Pointwise conv to project to latent_dim channels
         )
 
-        # Decoder: reconstructs the image from the latent space to (1, 28, 28)
+        # Decoder: reconstructs the image from the latent space to (1, 50, 50)
         # Progressive upsampling through transposed convolutions
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(latent_dim, 64, kernel_size=3, stride=2, padding=1, output_padding=0),  # 7->13
+            nn.ConvTranspose2d(latent_dim, 64, kernel_size=3, stride=2, padding=1, output_padding=0),  # 13->25
             nn.ReLU(),
-            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, output_padding=1),  # 13->28
+            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, output_padding=1),  # 25->50
             nn.ReLU(),
             nn.Conv2d(32, 1, kernel_size=3, stride=1, padding=1),  # Maintain size but reduce channels to 1
             nn.Sigmoid()  # Output in [0,1] range for image pixels
@@ -132,7 +132,7 @@ class VQVAE(nn.Module):
         Forward pass through the VQ-VAE.
         
         Args:
-            x: Input tensor of shape (batch_size, 1, 28, 28)
+            x: Input tensor of shape (batch_size, 1, 50, 50)
             
         Returns:
             x_recon: Reconstructed image

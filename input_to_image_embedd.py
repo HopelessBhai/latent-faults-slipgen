@@ -13,8 +13,21 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from assets.utils import clip_contrastive_loss, plot_losses, l1_regularization
 
+def infer_input_dim_from_file(npy_path: str) -> int:
+    """
+    Infer input dimension from a numpy .npy file that stores a dict of key -> vector.
+    Returns the flattened length of the first vector found.
+    """
+    data = np.load(npy_path, allow_pickle=True).item()
+    try:
+        first_key = next(iter(data))
+    except StopIteration:
+        raise ValueError(f"No entries found in {npy_path}")
+    arr = np.asarray(data[first_key]).reshape(-1)
+    return int(arr.shape[0])
+
 class LatentNN(nn.Module):
-    def __init__(self, input_dim=35, hidden_dims=[2048, 1024], output_dim=784, dropout_prob=0.3):
+    def __init__(self, input_dim=7, hidden_dims=[2048, 1024], output_dim=2704, dropout_prob=0.3):
         """
         Modified model to accept hyperparameters.
         """
@@ -180,8 +193,8 @@ if __name__ == "__main__":
     dropout_prob = hyperparams["dropout_prob"]
     lambda_l1 = hyperparams["lambda_l1"]
     hidden_dims = [hyperparams[f"layer_{i}_size"] for i in range(hyperparams["num_layers"])]
-    input_dim = 35  # Assuming input_dim is fixed
-    output_dim = 784  # Assuming output_dim is fixed
+    input_dim = infer_input_dim_from_file(r'Dataset/text_vec.npy')
+    output_dim = 2704  # Fixed output_dim to match VQ-VAE latent space (16x13x13)
     epochs = 400  # Default value
     patience = 20  # Default value
 

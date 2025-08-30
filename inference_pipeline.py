@@ -5,6 +5,7 @@ import json
 import numpy as np
 import pickle
 import os
+from PIL import Image
 
 class Inference:
     def __init__(self, 
@@ -17,7 +18,18 @@ class Inference:
             hyperparams = json.load(f)
         dropout_prob = hyperparams["dropout_prob"]
         hidden_dims = [hyperparams[f"hidden_layer_{i}"] for i in range(1, 1+1)]
-        input_dim = 35   # fixed input dim
+
+        # Infer input dimension from Dataset/text_vec.npy
+        def _infer_input_dim(npy_path: str) -> int:
+            data = np.load(npy_path, allow_pickle=True).item()
+            try:
+                first_key = next(iter(data))
+            except StopIteration:
+                raise ValueError(f"No entries found in {npy_path}")
+            arr = np.asarray(data[first_key]).reshape(-1)
+            return int(arr.shape[0])
+
+        input_dim = _infer_input_dim(r"Dataset/text_vec.npy")
         output_dim = 2704 # fixed output dim
 
         # Create latent model and load its weights.
@@ -33,6 +45,14 @@ class Inference:
         self.latent_model.to(self.device).eval()
         self.decoder.to(self.device).eval()
         print("Models are set to evaluation mode.")
+
+        # Load Dz map once
+        dz_path = os.path.join('assets', 'dz.json')
+        if os.path.isfile(dz_path):
+            with open(dz_path, 'r') as f:
+                self.dz_by_key = json.load(f)
+        else:
+            self.dz_by_key = {}
 
     def generate(self, text, actual_image_path=None, save_path=None, show_plot=True):
         """
@@ -60,9 +80,20 @@ class Inference:
             # Step 3: Decode the latent representation. 
             predicted_image_tensor = self.decoder(image_latent)
 
-        # Step 4: Visualize the prediction using the decoder's visualization utility.
-        self.decoder.visualize_prediction(predicted_image_tensor, 
-                                          true_image_path=actual_image_path, save_path=save_path)
+        # Step 4: Visualize prediction vs ground-truth in slip units if available
+        # Extract key name (without .fsp) to match dz.json keys
+        image_key = text
+        if image_key.endswith('.fsp'):
+            image_key = image_key[:-4]
+        dz = self.dz_by_key.get(image_key)
+
+        self.decoder.visualize_prediction(
+            predicted_image_tensor,
+            true_image_path=actual_image_path,
+            save_path=save_path,
+            dz=dz,
+            image_name=image_key
+        )
         return predicted_image_tensor
 
 # Example usage:
@@ -73,7 +104,7 @@ if __name__ == "__main__":
 
     # Folder containing the actual images
     actual_images_folder = r"Dataset/filtered_images_test"
-    
+
     # Get all image files in the folder
     for image_file in os.listdir(actual_images_folder):
         if image_file.startswith("interpolated_slip_image_") and image_file.endswith(".png"):
@@ -92,3 +123,4 @@ if __name__ == "__main__":
                 
             else:
                 print(f"No text found for key: {key}")
+                

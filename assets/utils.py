@@ -226,7 +226,6 @@ def _update_metrics_json(entry_key: str,
     with open(json_path, "w") as f:
         json.dump(data, f, indent=2)
 
-
 def save_metrics_for_image(decoded_img,
                            true_image_path: str,
                            json_metrics_path: str,
@@ -244,13 +243,14 @@ def save_metrics_for_image(decoded_img,
                          json_metrics_path)
     return metrics
 
-def pixels_to_slip(image,delta_z,plot=False):
+def pixels_to_slip(image, delta_z, image_name=None, plot=False):
 
     """
     Converts pixel values in an image to slip values using a normalizing slip range.
 
     Input:  image (numpy array) - The input image with pixel values.
             delta_z (float) - The scaling value for z axis used (Dz).
+            image_name (str|None) - Optional identifier for the image (for titles/labels).
             plot (bool) - If True, the function will plot the slip valued image.
 
     Output: slip_valued_image (numpy array) - The image with pixel values converted to slip values.
@@ -258,7 +258,7 @@ def pixels_to_slip(image,delta_z,plot=False):
     """
 
     normalizing_slip_range=np.load(r"./assets/normalizing_slip_range.npy",allow_pickle=True)
-    slip_valued_image = (image *normalizing_slip_range)/delta_z
+    slip_valued_image = (image * normalizing_slip_range)/delta_z
 
     if plot:
         # Step 5: Visualize the image.
@@ -266,7 +266,10 @@ def pixels_to_slip(image,delta_z,plot=False):
         plt.imshow(slip_valued_image,
                 origin='lower', cmap='viridis')
         plt.colorbar(label='Slip Intensity')
-        plt.title(f"Interpolated Slip Image (Integer Pixel Grid)")
+        title = f"Interpolated Slip Image (Integer Pixel Grid)"
+        if image_name is not None:
+            title = f"{image_name} – {title}"
+        plt.title(title)
         plt.xlabel("ES (centered)")
         plt.ylabel("NS (centered)")
         plt.show()

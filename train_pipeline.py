@@ -16,9 +16,25 @@ from assets.utils import l1_regularization, plot_losses
 from sklearn.preprocessing import StandardScaler
 from assets.utils import clip_contrastive_loss, ssim_loss
 
-INPUT_DIM = 35  # Fixed input dimension
-OUTPUT_DIM = 2704  # Fixed output dimension (50x50 grayscale image flattened)
+OUTPUT_DIM = 2704  # Fixed output dimension (16x13x13 latent space flattened)
 TEST_SPLIT = 0.2  # Proportion of data to use for validation
+
+def infer_input_dim_from_file(npy_path: str) -> int:
+    """
+    Infer input dimension from a numpy .npy file that stores a dict of key -> vector.
+    Returns the flattened length of the first vector found.
+    """
+    data = np.load(npy_path, allow_pickle=True).item()
+    # Get the first vector
+    try:
+        first_key = next(iter(data))
+    except StopIteration:
+        raise ValueError(f"No entries found in {npy_path}")
+    vec = data[first_key]
+    arr = np.asarray(vec)
+    # Flatten in case it is shaped like (D,) or (1, D) or (D, 1)
+    arr = arr.reshape(-1)
+    return int(arr.shape[0])
 
 def evaluate(latent, decoder, val_loader, criterion, lambda_l1=0.0):
     latent.eval()
@@ -35,9 +51,10 @@ def evaluate(latent, decoder, val_loader, criterion, lambda_l1=0.0):
             recon_loss = criterion(images, targets)
             loss = recon_loss + clip_loss
             val_loss += loss.item()
+
     return val_loss / len(val_loader)
 
-def train(latent, decoder, train_loader, val_loader, criterion, optimizer, epochs=100, patience=10, lambda_l1=1e-5):
+def train(latent, decoder, train_loader, val_loader, criterion, optimizer, epochs=100, patience=10, lambda_l1=1e-5, save_models=True, model_save_prefix=""):
     best_loss = float('inf')
     wait = 0
     train_losses, val_losses = [], []
@@ -91,12 +108,17 @@ def train(latent, decoder, train_loader, val_loader, criterion, optimizer, epoch
         if val_loss < best_loss:
             best_loss = val_loss
             wait = 0
-            latent_save_path = r"models/latent_model.pth"
-            decoder_save_path = r"models/decoder_model.pth"
-            torch.save(latent.state_dict(), latent_save_path)
-            torch.save(decoder.state_dict(), decoder_save_path)
-            print(f"Latent model saved at {latent_save_path}")
-            print(f"Decoder saved at {decoder_save_path}")
+            if save_models:
+                # Use unique file names to avoid concurrent access issues
+                latent_save_path = f"models/{model_save_prefix}latent_model.pth"
+                decoder_save_path = f"models/{model_save_prefix}decoder_model.pth"
+                try:
+                    torch.save(latent.state_dict(), latent_save_path)
+                    torch.save(decoder.state_dict(), decoder_save_path)
+                    print(f"Latent model saved at {latent_save_path}")
+                    print(f"Decoder saved at {decoder_save_path}")
+                except Exception as e:
+                    print(f"Warning: Could not save models: {e}")
         else:
             wait += 1
             if wait >= patience:
@@ -196,7 +218,7 @@ def prepare_dataloaders(text_embed_path, image_dir, batch_size=32, test_split=0.
 if __name__ == "__main__":
     train_loader, val_loader = prepare_dataloaders(
         text_embed_path=r'Dataset/text_vec.npy',
-        image_dir=r'Dataset\filtered_images_train'
+        image_dir=r'Dataset/filtered_images_train'
     )
     
     print(f"Data loaders are prepared")
@@ -213,8 +235,9 @@ if __name__ == "__main__":
     patience = 50
 
     # Instantiate models
-    decoder = Decoder(model_weights_path=r'models\vqvae_finetuned.pth')
-    latent = LatentNN(input_dim=INPUT_DIM, hidden_dims=hidden_dims, output_dim=OUTPUT_DIM, dropout_prob=dropout_prob)
+    decoder = Decoder(model_weights_path=r'models/vqvae_finetuned.pth')
+    inferred_input_dim = infer_input_dim_from_file(r'Dataset/text_vec.npy')
+    latent = LatentNN(input_dim=inferred_input_dim, hidden_dims=hidden_dims, output_dim=OUTPUT_DIM, dropout_prob=dropout_prob)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(list(latent.parameters()) + list(decoder.parameters()), lr=learning_rate)
-    train(latent, decoder, train_loader, val_loader, criterion, optimizer, epochs, patience, lambda_l1)
+    train(latent, decoder, train_loader, val_loader, criterion, optimizer, epochs, patience, lambda_l1, save_models=True, model_save_prefix="")

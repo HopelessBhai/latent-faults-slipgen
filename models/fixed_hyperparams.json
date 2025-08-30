@@ -1,7 +1,7 @@
 {
     "model": {
-        "input_dim": 35,
-        "output_dim": 784
+        "input_dim": 7,
+        "output_dim": 2704
     },
     "training": {
         "epochs": 50,
@@ -11,6 +11,6 @@
     },
     "data": {
         "text_embed_path": "Dataset/text_vec.npy",
-        "image_dir": "Dataset/filtered_images"
+        "image_dir": "Dataset/filtered_images_train"
     }
 }

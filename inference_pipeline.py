@@ -6,6 +6,7 @@ import numpy as np
 import pickle
 import os
 from PIL import Image
+from assets.utils import pixels_to_slip
 
 class Inference:
     def __init__(self, 
@@ -80,12 +81,30 @@ class Inference:
             # Step 3: Decode the latent representation. 
             predicted_image_tensor = self.decoder(image_latent)
 
-        # Step 4: Visualize prediction vs ground-truth in slip units if available
+        # Step 4: Convert to slip values and save as numpy array
         # Extract key name (without .fsp) to match dz.json keys
         image_key = text
         if image_key.endswith('.fsp'):
             image_key = image_key[:-4]
         dz = self.dz_by_key.get(image_key)
+
+        # Convert predicted image to slip values and save as numpy array
+        if dz is not None:
+            # Get the predicted image as numpy array
+            pred_array = predicted_image_tensor[0, 0].detach().cpu().numpy()
+            # Normalize if necessary
+            if pred_array.max() > 1.0 or pred_array.min() < 0.0:
+                pred_array = np.clip(pred_array, 0.0, 1.0)
+
+            # Convert to slip values
+            slip_array = pixels_to_slip(pred_array, dz, image_name=image_key, plot=False)
+
+            # Save slip array as numpy file
+            slip_save_dir = "Dataset/slip_arrays_inference"
+            os.makedirs(slip_save_dir, exist_ok=True)
+            slip_save_path = os.path.join(slip_save_dir, f"slip_array_{image_key}.npy")
+            np.save(slip_save_path, slip_array)
+            print(f"Saved slip array to: {slip_save_path}")
 
         self.decoder.visualize_prediction(
             predicted_image_tensor,
@@ -104,6 +123,7 @@ if __name__ == "__main__":
 
     # Folder containing the actual images
     actual_images_folder = r"Dataset/filtered_images_test"
+
 
     # Get all image files in the folder
     for image_file in os.listdir(actual_images_folder):

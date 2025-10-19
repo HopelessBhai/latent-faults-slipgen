@@ -5,4 +5,5 @@ temp_del
 models/keras_vqvae
 models/minilm
 analysis.ipynb
-
+help.txt
+myvenv

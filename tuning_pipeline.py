@@ -24,9 +24,9 @@ def objective(trial):
     the models for a reduced number of epochs, and returns the final validation loss.
     """
     # Sample hyperparameters from search space.
-    learning_rate = trial.suggest_float("learning_rate", 1e-7, 1e-2, log=True)
-    dropout_prob = trial.suggest_float("dropout_prob", 0.0, 0.5)
-    lambda_l1 = trial.suggest_float("lambda_l1", 1e-7, 1e-4, log=True)
+    learning_rate = trial.suggest_float("learning_rate", 1e-7, 1e-3, log=True)
+    dropout_prob = trial.suggest_float("dropout_prob", 0.0, 0.2)
+    lambda_l1 = trial.suggest_float("lambda_l1", 1e-9, 1e-2, log=True)
     # Choose number of hidden layers
     # n_layers = trial.suggest_int("n_layers", 1, 4)
     n_layers = 1  # Fixed number of layers for simplicity in this example
@@ -63,8 +63,8 @@ def objective(trial):
     optimizer = optim.Adam(list(latent.parameters()) + list(decoder.parameters()), lr=learning_rate)
 
     # Train the model using a smaller number of epochs to make tuning faster.
-    tuning_epochs = 50
-    early_stopping_patience = 10
+    tuning_epochs = 10000
+    early_stopping_patience = 60
     print(f"\nTrial with: lr={learning_rate:.5f}, dropout={dropout_prob:.2f}, lambda_l1={lambda_l1:.7f}, hidden_dims={hidden_dims}")
 
     # Create unique file prefix for this trial to avoid concurrent access issues

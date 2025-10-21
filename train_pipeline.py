@@ -228,11 +228,12 @@ if __name__ == "__main__":
         hyperparams = json.load(f)
 
     learning_rate = hyperparams["learning_rate"]
+    # learning_rate = 1e-4
     dropout_prob = hyperparams["dropout_prob"]
     lambda_l1 = hyperparams["lambda_l1"]
     hidden_dims = [hyperparams[f"hidden_layer_{i}"] for i in range(1,1+1)]
-    epochs = 1000
-    patience = 50
+    epochs = 10000
+    patience = 400
 
     # Instantiate models
     decoder = Decoder(model_weights_path=r'models/vqvae_finetuned.pth')

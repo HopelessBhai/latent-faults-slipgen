@@ -18,7 +18,8 @@ from assets.utils import clip_contrastive_loss, ssim_loss
 
 OUTPUT_DIM = 2704  # Fixed output dimension (16x13x13 latent space flattened)
 TEST_SPLIT = 0.2  # Proportion of data to use for validation
-
+N_EPOCHS = 10000
+PATIENCE = 2000
 def infer_input_dim_from_file(npy_path: str) -> int:
     """
     Infer input dimension from a numpy .npy file that stores a dict of key -> vector.
@@ -224,7 +225,7 @@ if __name__ == "__main__":
     print(f"Data loaders are prepared")
     print(f"Train loader size: {len(train_loader.dataset)}")
 
-    with open(r'models_1.0/best_hyperparams.json', 'r') as f:
+    with open(r'models/best_hyperparams.json', 'r') as f:
         hyperparams = json.load(f)
 
     learning_rate = hyperparams["learning_rate"]
@@ -232,11 +233,11 @@ if __name__ == "__main__":
     dropout_prob = hyperparams["dropout_prob"]
     lambda_l1 = hyperparams["lambda_l1"]
     hidden_dims = [hyperparams[f"hidden_layer_{i}"] for i in range(1,1+1)]
-    epochs = 10000
-    patience = 2000
+    epochs = N_EPOCHS
+    patience = PATIENCE
 
     # Instantiate models
-    decoder = Decoder(model_weights_path=r'models_1.0/vqvae_finetuned.pth')
+    decoder = Decoder(model_weights_path=r'models/vqvae_finetuned.pth')
     inferred_input_dim = infer_input_dim_from_file(r'Dataset/text_vec.npy')
     latent = LatentNN(input_dim=inferred_input_dim, hidden_dims=hidden_dims, output_dim=OUTPUT_DIM, dropout_prob=dropout_prob)
     criterion = nn.MSELoss()

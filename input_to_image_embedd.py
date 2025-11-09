@@ -156,11 +156,8 @@ def prepare_dataloaders(text_embed_path, image_embed_path, batch_size=32, test_s
     X_train = scaler_x.fit_transform(X_train)
     X_val = scaler_x.transform(X_val)
 
-    # y_train = scaler_y.fit_transform(y_train)
-    # y_val = scaler_y.transform(y_val)
     with open('scaler_x.pkl', 'wb') as f:
         pickle.dump(scaler_x, f)
-    # print(scaler_x.mean_, scaler_x.var_)
 
     # Dataset and loaders
     train_dataset = EmbedDataset(X_train, y_train)
@@ -180,9 +177,7 @@ if __name__ == "__main__":
 
     print("Train loader size:", len(train_loader.dataset))
     print("Validation loader size:", len(val_loader.dataset))
-    # Load hyperparameters from a JSON file
-    # with open('best_hyperparams.json', 'r') as f:
-        # hyperparams = json.load(f)
+
 
     # Extract hyperparameters
     with open(r'models/best_hyperparams.json', 'r') as f:

@@ -233,74 +233,7 @@ class Decoder(nn.Module):
             fig.colorbar(im2, ax=axes[0], label='Slip', pad=0.04, aspect=30)
             fig.colorbar(im2, ax=axes[1], label='Slip', pad=0.04, aspect=30)
 
-            # # --- Adjust layout to prevent overlap ---
-            # plt.tight_layout(rect=[0, 0, 0.95, 1])
-
-
-            # Save the figure to a file
-            # plt.savefig(f'Dataset/predicted_images_LAT_LON/slip_image_{image_name}_lat_lon.png', bbox_inches='tight')
-
-            # plt.savefig(f'{save_dir}/slip_image_{image_name}_lat_lon.png', bbox_inches='tight')
-
-            # Display the plot
             plt.show()
-            # # --- Visualizing the resulting coordinate images ---
-            # fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-
-            # # Plot 1: Original Interpolated Slip Image
-            # ax1 = axes[0]
-            # im1 = ax1.imshow(extrapolated_pred_slip, origin='lower', cmap='viridis', 
-            #                 extent=[lon_image.min(), lon_image.max(), lat_image.min(), lat_image.max()])
-            # ax1.set_title("Interpolated Slip Image")
-            # ax1.set_xlabel("Longitude")
-            # ax1.set_ylabel("Latitude")
-
-            # # Overlay original data points for reference
-            # ax1.scatter(src_df['LON'], src_df['LAT'], c='red', edgecolor='white', s=25, label='Original Subfaults')
-            # ax1.legend()
-
-            # # Plot 2: Combined Latitude and Longitude Grid
-            # ax2 = axes[1]
-            # im2 = ax2.imshow(extrapolated_gt_slip, origin='lower', cmap='viridis', 
-            #                 extent=[lon_image.min(), lon_image.max(), lat_image.min(), lat_image.max()])
-            # ax2.set_title("gt Interpolated Slip Image")
-            # ax2.set_xlabel("Longitude")
-            # ax2.set_ylabel("Latitude")
-            # # lat_flat = lat_image.flatten()
-            # # lon_flat = lon_image.flatten()
-            # # slip_flat = extrapolated_gt_slip.flatten()
-            # # scatter = ax2.scatter(lon_flat, lat_flat, c=slip_flat, cmap='viridis', s=1, alpha=0.7)
-
-            # # fig.colorbar(scatter, ax=ax2, label="Slip Value")
-
-            # fig.colorbar(im2, ax=axes, fraction=0.046, pad=0.04, label='Slip')
-            # # Overlay original data points for reference
-            # ax2.scatter(src_df['LON'], src_df['LAT'], c='red', edgecolor='white', s=25, label='Original Subfaults')
-            # ax2.legend()
-
-            # plt.tight_layout()
-            # plt.show()
-            # plt.savefig(f'Dataset/predicted_images_LAT_LON/slip_image_{image_name}_lat_lon.png', bbox_inches='tight')
-            # exit()
-
-            # vmin = np.min(pred_slip if gt_slip is None else np.minimum(pred_slip, gt_slip))
-            # vmax = np.max(pred_slip if gt_slip is None else np.maximum(pred_slip, gt_slip))
-
-            # fig, axes = plt.subplots(1,2 if gt_slip is not None else 1, figsize=(12, 6))
-            # if not isinstance(axes, np.ndarray):
-            #     axes = np.array([axes])
-
-            # im0 = axes[0].imshow(extrapolated_pred_slip, cmap='viridis', origin='lower', vmin=vmin, vmax=vmax)
-            # axes[0].set_title("Predicted (slip)")
-            # axes[0].axis("off")
-
-            # # if gt_slip is not None and len(axes) > 1:
-            # #     axes[1].imshow(gt_slip, cmap='viridis', origin='lower', vmin=vmin, vmax=vmax)
-            # #     axes[1].set_title("Ground Truth (slip)")
-            # #     axes[1].axis("off")
-
-            # # Shared colorbar
-            # fig.colorbar(im0, ax=axes, fraction=0.046, pad=0.04, label='Slip')
 
             # Calculate error metrics if both predicted and ground truth are available
             if gt_slip is not None:

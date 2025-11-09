@@ -7,9 +7,14 @@ import os
 import pickle
 from image_embedder import VQVAE  # Assumes PyTorch model is here
 from assets.utils import save_metrics_for_image, pixels_to_slip
+import pandas as pd
+import io
+from scipy.interpolate import griddata
 
+# =======================================
 class Decoder(nn.Module):
     def __init__(self, model_weights_path, device="cpu"):
+        
         super(Decoder, self).__init__()
         self.device = torch.device(device)
         self.model = VQVAE(latent_dim=16, num_embeddings=128)
@@ -34,6 +39,123 @@ class Decoder(nn.Module):
         latent = embedding.view(B, 16, 13, 13)
         decoded = self.model.decoder(latent)
         return decoded
+
+    def get_lat_lon_from_image(self,interpolated_image, gt_slip,original_x_ew, original_y_ns, 
+                            epicenter_lat, epicenter_lon, Dx,src_df):
+        """
+        Reverses the interpolation process to generate LAT and LON images.
+
+        Args:
+            interpolated_image (np.ndarray): The 2D numpy array of the interpolated slip.
+            original_x_ew (np.ndarray): The original 'X==EW' coordinates in km.
+            original_y_ns (np.ndarray): The original 'Y==NS' coordinates in km.
+            epicenter_lat (float): Latitude of the epicenter.
+            epicenter_lon (float): Longitude of the epicenter.
+            Dx (float): The inversion parameter 'Dx' in km.
+
+        Returns:
+            tuple: A tuple containing two 2D numpy arrays: (lat_grid, lon_grid).
+        """
+
+                
+        # =============================================================================
+        # 2. FORWARD PROCESS: Generate the interpolated image (as in your example)
+        #    This gives us an image to work with for the reversal.
+        # =============================================================================
+
+        # Extract and scale coordinates
+        es = src_df['X==EW'].values * Dx / 5.0
+        ns = src_df['Y==NS'].values * Dx / 5.0
+        slip = src_df['SLIP'].values / src_df['SLIP'].max()
+
+        # Recenter coordinates
+        es_centered = es - np.mean(es)
+        ns_centered = ns - np.mean(ns)
+
+
+        # epicenter_lat = input[input['filename']==i]['LAT'].values[0]
+        # epicenter_lon = input[input['filename']==i]['LON'].values[0]
+
+        # # Define the grid for interpolation
+        print(f"es_centered: {es_centered.shape}")
+        x_min = int(np.floor(np.min(es_centered)))
+        x_max = int(np.ceil(np.max(es_centered)))
+        y_min = int(np.floor(np.min(ns_centered)))
+        y_max = int(np.ceil(np.max(ns_centered)))
+
+        grid_x, grid_y = np.meshgrid(np.arange(x_min, x_max + 1),
+                                    np.arange(y_min, y_max + 1))
+
+        # Interpolate slip values onto the grid
+        points = np.column_stack((es_centered, ns_centered))
+        interpolated_slip_image = griddata(points, slip, (grid_x, grid_y), method='cubic', fill_value=0)
+        interpolated_slip_image_shape=interpolated_slip_image.shape
+        print(interpolated_image.shape,interpolated_slip_image_shape)
+        a,b= interpolated_slip_image_shape
+
+        print(type(interpolated_image))
+
+        interpolated_image_pil = Image.fromarray((interpolated_image))
+        interpolated_image= interpolated_image_pil.resize((a,b), Image.LANCZOS)
+        interpolated_image = np.array(interpolated_image)
+
+        gt_slip_pil = Image.fromarray((gt_slip))
+        gt_slip= gt_slip_pil.resize((a,b), Image.LANCZOS)
+        gt_slip = np.array(gt_slip)
+
+
+        # interpolated_slip_image = plt.imread(f"./Dataset/predicted_images_3.0/reconstructed_image_{i[:-4]}.png")
+        # if len(interpolated_slip_image.shape) == 3:
+        #     interpolated_slip_image = interpolated_slip_image[:, :, 0]
+        # print(interpolated_slip_image.shape)    
+
+        # print(f"Generated an example interpolated image with shape: {interpolated_slip_image.shape}")
+
+        # --- Step 1: Recalculate key parameters from the forward process ---
+        # These are needed to correctly map pixel coordinates back.
+        es = original_x_ew * Dx / 5.0
+        ns = original_y_ns * Dx / 5.0
+        mean_es = np.mean(es)
+        mean_ns = np.mean(ns)
+        es_centered = es - mean_es
+        ns_centered = ns - mean_ns
+        x_min_fwd = int(np.floor(np.min(es_centered)))
+        y_min_fwd = int(np.floor(np.min(ns_centered)))
+        
+        # --- Step 2: Create a grid of the image's pixel coordinates ---
+        height, width = interpolated_slip_image_shape
+        pixel_cols, pixel_rows = np.meshgrid(np.arange(width), np.arange(height))
+
+        # --- Step 3: Map pixel coordinates back to the centered local grid ---
+        # This reverses the creation of the grid.
+        es_centered_grid = pixel_cols + x_min_fwd
+        ns_centered_grid = pixel_rows + y_min_fwd
+
+        # --- Step 4: Reverse the centering and scaling ---
+        # Add the mean back to reverse the centering
+        es_grid = es_centered_grid + mean_es
+        ns_grid = ns_centered_grid + mean_ns
+        
+        # Divide by the scaling factor to get back to original km units
+        x_ew_grid_km = es_grid / (Dx / 5.0)
+        y_ns_grid_km = ns_grid / (Dx / 5.0)
+        
+        # --- Step 5: Convert local km coordinates to geographic LAT/LON degrees ---
+        # The origin (0,0) of the (X==EW, Y==NS) system is the epicenter.
+        km_per_deg_lat = 111.32
+        km_per_deg_lon = 111.32 * np.cos(np.radians(epicenter_lat))
+        
+        # Calculate the offset in degrees from the epicenter
+        delta_lat_grid = y_ns_grid_km / km_per_deg_lat
+        delta_lon_grid = x_ew_grid_km / km_per_deg_lon
+        
+        # Add the offset to the epicenter's coordinates
+        lat_grid = epicenter_lat + delta_lat_grid
+        lon_grid = epicenter_lon + delta_lon_grid
+        
+        return lat_grid, lon_grid, interpolated_image, gt_slip
+
+
 
     def visualize_prediction(self, decoded_image, true_image_path=None, save_path=None, dz=None, image_name=None):
         """
@@ -61,24 +183,124 @@ class Decoder(nn.Module):
             # gt_slip = gt_array
             
             # Shared color scale
-            vmin = np.min(pred_slip if gt_slip is None else np.minimum(pred_slip, gt_slip))
-            vmax = np.max(pred_slip if gt_slip is None else np.maximum(pred_slip, gt_slip))
+            input = pd.read_csv(r'./Dataset/extracted_dataset/non-multisegment/non-multisegment_input.csv')
+            src = pd.read_csv(r'./Dataset/extracted_dataset/non-multisegment/non-multisegment_output.csv')
 
-            fig, axes = plt.subplots(1, 2 if gt_slip is not None else 1, figsize=(12, 6))
-            if not isinstance(axes, np.ndarray):
-                axes = np.array([axes])
+            # --- Execute the reversal function ---
+            print(src['filename'].unique()[0])
+            lat_image, lon_image, extrapolated_pred_slip, extrapolated_gt_slip = self.get_lat_lon_from_image(
+                interpolated_image=pred_slip,
+                gt_slip=gt_slip,
+                original_x_ew=src[src['filename']==(image_name+'.fsp')]['X==EW'].values,
+                original_y_ns=src[src['filename']==(image_name+'.fsp')]['Y==NS'].values,
+                epicenter_lat=input[input['filename']==(image_name+'.fsp')]['LAT'].values[0],
+                epicenter_lon=input[input['filename']==(image_name+'.fsp')]['LON'].values[0],
+                Dx=input[input['filename']==(image_name+'.fsp')]['Dx'].values[0],
+                src_df=src[src['filename']==(image_name+'.fsp')]
+            )
+            src_df=src[src['filename']==image_name]
+            
+            print(f"Generated LAT/LON images, each with shape: {lat_image.shape}")
+            # =============================================================================
+            # 4. USAGE AND VISUALIZATION
+            # =============================================================================
+            # --- Visualizing the resulting coordinate images ---
+            # fig, axes = plt.subplots(1, 2, figsize=(20, 10))
 
-            im0 = axes[0].imshow(pred_slip, cmap='viridis', origin='lower', vmin=vmin, vmax=vmax)
-            axes[0].set_title("Predicted (slip)")
-            axes[0].axis("off")
+            FIG_WIDTH = 16
+            FIG_HEIGHT = 6
+            DPI = 100
+            fig, axes = plt.subplots(1, 2, figsize=(FIG_WIDTH, FIG_HEIGHT), dpi=DPI)
 
-            if gt_slip is not None and len(axes) > 1:
-                axes[1].imshow(gt_slip, cmap='viridis', origin='lower', vmin=vmin, vmax=vmax)
-                axes[1].set_title("Ground Truth (slip)")
-                axes[1].axis("off")
 
-            # Shared colorbar
-            fig.colorbar(im0, ax=axes, fraction=0.046, pad=0.04, label='Slip')
+            # --- Plot 1: Interpolated Slip Image (Prediction) ---
+            ax1 = axes[0]
+            im1 = ax1.imshow(extrapolated_pred_slip, origin='lower', cmap='viridis', 
+                            extent=[lon_image.min(), lon_image.max(), lat_image.min(), lat_image.max()])
+            ax1.set_title("Predicted Slip Image")
+            ax1.set_xlabel("Longitude")
+            ax1.set_ylabel("Latitude")
+
+            # --- Plot 2: Interpolated Slip Image (Ground Truth) ---
+            ax2 = axes[1]
+            im2 = ax2.imshow(extrapolated_gt_slip, origin='lower', cmap='viridis', 
+                            extent=[lon_image.min(), lon_image.max(), lat_image.min(), lat_image.max()])
+            ax2.set_title("Ground Truth Slip Image")
+            ax2.set_xlabel("Longitude")
+            ax2.set_ylabel("Latitude")
+
+            # --- Add a single colorbar for the entire figure ---4
+            fig.colorbar(im2, ax=axes[0], label='Slip', pad=0.04, aspect=30)
+            fig.colorbar(im2, ax=axes[1], label='Slip', pad=0.04, aspect=30)
+
+            # # --- Adjust layout to prevent overlap ---
+            # plt.tight_layout(rect=[0, 0, 0.95, 1])
+
+
+            # Save the figure to a file
+            # plt.savefig(f'Dataset/predicted_images_LAT_LON/slip_image_{image_name}_lat_lon.png', bbox_inches='tight')
+
+            # plt.savefig(f'{save_dir}/slip_image_{image_name}_lat_lon.png', bbox_inches='tight')
+
+            # Display the plot
+            plt.show()
+            # # --- Visualizing the resulting coordinate images ---
+            # fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+            # # Plot 1: Original Interpolated Slip Image
+            # ax1 = axes[0]
+            # im1 = ax1.imshow(extrapolated_pred_slip, origin='lower', cmap='viridis', 
+            #                 extent=[lon_image.min(), lon_image.max(), lat_image.min(), lat_image.max()])
+            # ax1.set_title("Interpolated Slip Image")
+            # ax1.set_xlabel("Longitude")
+            # ax1.set_ylabel("Latitude")
+
+            # # Overlay original data points for reference
+            # ax1.scatter(src_df['LON'], src_df['LAT'], c='red', edgecolor='white', s=25, label='Original Subfaults')
+            # ax1.legend()
+
+            # # Plot 2: Combined Latitude and Longitude Grid
+            # ax2 = axes[1]
+            # im2 = ax2.imshow(extrapolated_gt_slip, origin='lower', cmap='viridis', 
+            #                 extent=[lon_image.min(), lon_image.max(), lat_image.min(), lat_image.max()])
+            # ax2.set_title("gt Interpolated Slip Image")
+            # ax2.set_xlabel("Longitude")
+            # ax2.set_ylabel("Latitude")
+            # # lat_flat = lat_image.flatten()
+            # # lon_flat = lon_image.flatten()
+            # # slip_flat = extrapolated_gt_slip.flatten()
+            # # scatter = ax2.scatter(lon_flat, lat_flat, c=slip_flat, cmap='viridis', s=1, alpha=0.7)
+
+            # # fig.colorbar(scatter, ax=ax2, label="Slip Value")
+
+            # fig.colorbar(im2, ax=axes, fraction=0.046, pad=0.04, label='Slip')
+            # # Overlay original data points for reference
+            # ax2.scatter(src_df['LON'], src_df['LAT'], c='red', edgecolor='white', s=25, label='Original Subfaults')
+            # ax2.legend()
+
+            # plt.tight_layout()
+            # plt.show()
+            # plt.savefig(f'Dataset/predicted_images_LAT_LON/slip_image_{image_name}_lat_lon.png', bbox_inches='tight')
+            # exit()
+
+            # vmin = np.min(pred_slip if gt_slip is None else np.minimum(pred_slip, gt_slip))
+            # vmax = np.max(pred_slip if gt_slip is None else np.maximum(pred_slip, gt_slip))
+
+            # fig, axes = plt.subplots(1,2 if gt_slip is not None else 1, figsize=(12, 6))
+            # if not isinstance(axes, np.ndarray):
+            #     axes = np.array([axes])
+
+            # im0 = axes[0].imshow(extrapolated_pred_slip, cmap='viridis', origin='lower', vmin=vmin, vmax=vmax)
+            # axes[0].set_title("Predicted (slip)")
+            # axes[0].axis("off")
+
+            # # if gt_slip is not None and len(axes) > 1:
+            # #     axes[1].imshow(gt_slip, cmap='viridis', origin='lower', vmin=vmin, vmax=vmax)
+            # #     axes[1].set_title("Ground Truth (slip)")
+            # #     axes[1].axis("off")
+
+            # # Shared colorbar
+            # fig.colorbar(im0, ax=axes, fraction=0.046, pad=0.04, label='Slip')
 
             # Calculate error metrics if both predicted and ground truth are available
             if gt_slip is not None:
@@ -101,9 +323,9 @@ class Decoder(nn.Module):
                         json.dump(error_metrics, f, indent=4)
                 
                 mean_error = error_metrics["mean_error"]
-                fig.suptitle(f"Earthquake: {image_name}")
+                fig.suptitle(f"Earthquake: {input[input['filename']==(image_name+'.fsp')]['Event'].values[0]}")
             else:
-                fig.suptitle(f"Earthquake: {image_name}")
+                fig.suptitle(f"Earthquake: {input[input['filename']==(image_name+'.fsp')]['Event'].values[0]}")
         else:
             # Fallback: original visualization without scaling
             fig, axes = plt.subplots(1, 2 if gt_array is not None else 1, figsize=(12, 6))
@@ -149,6 +371,7 @@ class Decoder(nn.Module):
         else:
             plt.show()
         plt.close()
+        return extrapolated_pred_slip
 
 # Example usage (for testing)
 if __name__ == "__main__":
@@ -165,5 +388,5 @@ if __name__ == "__main__":
         embedding_tensor = torch.tensor(embedding, dtype=torch.float32).unsqueeze(0).to(device)  # shape: [1, 2704]
         reconstructed_image = decoder(embedding_tensor)  # Use forward() directly
         actual_image_path = rf"Dataset\filtered_images_train\interpolated_slip_image_{key}.fsp.png"
-        save_path = rf"Dataset/reconstructed_images/reconstructed_image_{key}.png"
+        save_path = rf"Dataset/reconstructed_images/reconstructed_image_{key}.png"        
         decoder.visualize_prediction(reconstructed_image, true_image_path=actual_image_path, save_path=save_path)

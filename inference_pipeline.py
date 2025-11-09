@@ -99,20 +99,22 @@ class Inference:
             # Convert to slip values
             slip_array = pixels_to_slip(pred_array, dz, image_name=image_key, plot=False)
 
-            # Save slip array as numpy file
-            slip_save_dir = "Dataset/slip_arrays_inference"
-            os.makedirs(slip_save_dir, exist_ok=True)
-            slip_save_path = os.path.join(slip_save_dir, f"slip_array_{image_key}.npy")
-            np.save(slip_save_path, slip_array)
-            print(f"Saved slip array to: {slip_save_path}")
-
-        self.decoder.visualize_prediction(
+            
+        extrapolated_pred_slip=self.decoder.visualize_prediction(
             predicted_image_tensor,
             true_image_path=actual_image_path,
             save_path=save_path,
             dz=dz,
             image_name=image_key
         )
+        # Save slip array as numpy file
+        slip_array = np.array(extrapolated_pred_slip)
+        slip_save_dir = "Dataset/slip_arrays_inference"
+        os.makedirs(slip_save_dir, exist_ok=True)
+        slip_save_path = os.path.join(slip_save_dir, f"slip_array_{image_key}.npy")
+        np.save(slip_save_path, slip_array)
+        print(f"Saved slip array to: {slip_save_path}")
+
         return predicted_image_tensor
 
 # Example usage:
@@ -132,7 +134,7 @@ if __name__ == "__main__":
             key = image_file.replace("interpolated_slip_image_", "").replace(".fsp.png", "")  # Remove extension
             
             if key in input_file:
-                save_path = rf"Dataset/predicted_images/reconstructed_image_{key}.png"
+                save_path = rf"Dataset/predicted_images_LAT_LON/reconstructed_image_{key}.png"
                 text_input = input_file[key]
                 
                 # Generate the image using the key from actual image path

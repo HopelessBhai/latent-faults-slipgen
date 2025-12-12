@@ -233,7 +233,8 @@ class Decoder(nn.Module):
             fig.colorbar(im2, ax=axes[0], label='Slip', pad=0.04, aspect=30)
             fig.colorbar(im2, ax=axes[1], label='Slip', pad=0.04, aspect=30)
 
-            plt.show()
+
+            # plt.show()
 
             # Calculate error metrics if both predicted and ground truth are available
             if gt_slip is not None:
@@ -302,6 +303,7 @@ class Decoder(nn.Module):
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             plt.savefig(save_path, bbox_inches='tight')
         else:
+            print("No save path found....")
             plt.show()
         plt.close()
         return extrapolated_pred_slip

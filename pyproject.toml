@@ -1,0 +1,19 @@
+[project]
+name = "latentfaults-generative-modeling-of-earthquake-ruptures-from-sparse-parameters"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ipykernel>=7.1.0",
+    "matplotlib>=3.10.8",
+    "numpy>=2.3.5",
+    "pandas>=2.3.3",
+    "pillow>=12.0.0",
+    "scikit-learn>=1.8.0",
+    "seaborn>=0.13.2",
+    "streamlit>=1.52.1",
+    "torch>=2.9.1",
+    "torchvision>=0.24.1",
+    "tqdm>=4.67.1",
+]

@@ -240,7 +240,7 @@ def fine_tune_vqvae(model, dataset, epochs=10, lr=1e-4, save_path="models/vqvae_
 
     # Setup optimizer and learning rate scheduler
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
     criterion = nn.MSELoss()  # Mean squared error loss for reconstruction
 
     # Initialize early stopping variables

@@ -10,7 +10,22 @@ from decoder import Decoder
 
 # ------------------------------- constants -----------------------------------
 FEATURE_NAMES: List[str] = [
-    "LEN_f", "WID", "RAKE", "HypX", "HypZ", "Htop", "DIP", "STRK", "Mw"
+    'LAT',      # Latitude of the fault or subfault patch
+    'LON',      # Longitude of the fault or subfault patch
+    'DEP',      # Depth of the fault or subfault patch
+    'STRK',     # Strike angle (orientation of the fault relative to North)
+    'DIP',      # Dip angle (steepness of the fault plane)
+    'RAKE',     # Rake angle (direction of slip)
+    'LEN_f',    # Fault length (if known before the event)
+    'WID',      # Fault width (if known before the event)
+    'Htop',     # Depth to the top of the fault
+    'HypX',     # Hypocenter location along the fault's length
+    'HypZ',     # Hypocenter location along the fault's width
+    'Nx',       # Number of subfaults along strike
+    'Nz',       # Number of subfaults along dip
+    'Dx',       # Length of each subfault patch
+    'Dz',       # Width of each subfault patch
+    'Mw'        # Moment Magnitude
 ]
 TEXT_VEC_PATH = r"Dataset/text_vec.npy"
 SCALER_X_PATH = r"scaler_x.pkl"
@@ -207,7 +222,7 @@ for i, name in enumerate(FEATURE_NAMES):
 
 
 with st.expander("Advanced options", expanded=False):
-    apply_dz = st.checkbox("Apply Dz scaling (convert to slip units)", value=False)
+    apply_dz = st.checkbox("Apply Dz scaling (convert to slip units)", value=True)
     manual_dz = None
     if apply_dz:
         # If a preset is selected and we have Dz for it, use as default
@@ -267,5 +282,3 @@ st.markdown(
     2. Run: `streamlit run interactive_slip_app.py`
     """
 )
-
-

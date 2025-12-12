@@ -4,13 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-import tensorflow as tf
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 from PIL import Image
-import json
-from skimage.metrics import structural_similarity as sk_ssim      # SSIM
+import json # SSIM
 # import piq                                                        # VIF-P
 from scipy.stats import wasserstein_distance, entropy                   # 1-D EMD
 

@@ -99,7 +99,7 @@ class Inference:
             # Convert to slip values
             slip_array = pixels_to_slip(pred_array, dz, image_name=image_key, plot=False)
 
-            
+        # if show_plot:
         extrapolated_pred_slip=self.decoder.visualize_prediction(
             predicted_image_tensor,
             true_image_path=actual_image_path,
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                 # Generate the image using the key from actual image path
                 output_image = generator.generate(text=key, 
                                                   actual_image_path=os.path.join(actual_images_folder, image_file),
-                                                  save_path=save_path)
+                                                  save_path=save_path, show_plot=False)
                 print(f"Generated image for key: {key}")
                 
             else:

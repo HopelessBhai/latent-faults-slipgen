@@ -155,7 +155,7 @@ def run_inference(
 st.set_page_config(page_title="Interactive Slip Map Generator", layout="wide")
 st.title("Interactive Slip Map Generator")
 st.caption(
-    "Adjust the 9 input parameters using the sliders below. The ranges are "
+    "Adjust the input parameters using the sliders below. The ranges are "
     "derived from your dataset (min/max per feature)."
 )
 

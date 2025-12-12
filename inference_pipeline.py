@@ -55,7 +55,7 @@ class Inference:
         else:
             self.dz_by_key = {}
 
-    def generate(self, text, actual_image_path=None, save_path=None, show_plot=True):
+    def generate(self, text, actual_image_path=None, save_path=None):
         """
         Generate an image from the provided text using the end-to-end trained model.
         """
@@ -88,16 +88,16 @@ class Inference:
             image_key = image_key[:-4]
         dz = self.dz_by_key.get(image_key)
 
-        # Convert predicted image to slip values and save as numpy array
-        if dz is not None:
-            # Get the predicted image as numpy array
-            pred_array = predicted_image_tensor[0, 0].detach().cpu().numpy()
-            # Normalize if necessary
-            if pred_array.max() > 1.0 or pred_array.min() < 0.0:
-                pred_array = np.clip(pred_array, 0.0, 1.0)
+        # # Convert predicted image to slip values and save as numpy array
+        # if dz is not None:
+        #     # Get the predicted image as numpy array
+        #     pred_array = predicted_image_tensor[0, 0].detach().cpu().numpy()
+        #     # Normalize if necessary
+        #     if pred_array.max() > 1.0 or pred_array.min() < 0.0:
+        #         pred_array = np.clip(pred_array, 0.0, 1.0)
 
-            # Convert to slip values
-            slip_array = pixels_to_slip(pred_array, dz, image_name=image_key, plot=False)
+        #     # Convert to slip values
+        #     slip_array = pixels_to_slip(pred_array, dz, image_name=image_key, plot=False)
 
         # if show_plot:
         extrapolated_pred_slip=self.decoder.visualize_prediction(
@@ -107,12 +107,13 @@ class Inference:
             dz=dz,
             image_name=image_key
         )
+
         # Save slip array as numpy file
-        slip_array = np.array(extrapolated_pred_slip)
+        slip_array_numpy = np.array(extrapolated_pred_slip)
         slip_save_dir = "Dataset/slip_arrays_inference"
         os.makedirs(slip_save_dir, exist_ok=True)
         slip_save_path = os.path.join(slip_save_dir, f"slip_array_{image_key}.npy")
-        np.save(slip_save_path, slip_array)
+        np.save(slip_save_path, slip_array_numpy)
         print(f"Saved slip array to: {slip_save_path}")
 
         return predicted_image_tensor
@@ -140,7 +141,7 @@ if __name__ == "__main__":
                 # Generate the image using the key from actual image path
                 output_image = generator.generate(text=key, 
                                                   actual_image_path=os.path.join(actual_images_folder, image_file),
-                                                  save_path=save_path, show_plot=False)
+                                                  save_path=save_path)
                 print(f"Generated image for key: {key}")
                 
             else:

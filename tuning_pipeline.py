@@ -63,7 +63,7 @@ def objective(trial):
     optimizer = optim.Adam(list(latent.parameters()) + list(decoder.parameters()), lr=learning_rate)
 
     # Train the model using a smaller number of epochs to make tuning faster.
-    tuning_epochs = 10000
+    tuning_epochs = 500
     early_stopping_patience = 60
     print(f"\nTrial with: lr={learning_rate:.5f}, dropout={dropout_prob:.2f}, lambda_l1={lambda_l1:.7f}, hidden_dims={hidden_dims}")
 

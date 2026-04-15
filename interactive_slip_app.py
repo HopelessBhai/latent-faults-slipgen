@@ -364,10 +364,9 @@ cols3 = st.columns(4)
 nx = cols3[0].slider("Nx", float(mins[11]), float(maxs[11]), st.session_state.nx, 1.0)
 nz = cols3[1].slider("Nz", float(mins[12]), float(maxs[12]), st.session_state.nz, 1.0)
 dx = cols3[2].slider("Dx", float(mins[13]), float(maxs[13]), st.session_state.dx, 0.1)
-dz = cols3[3].slider("Dz", float(mins[14]), float(maxs[14]), st.session_state.dz, 0.1)
 
 st.session_state.lat, st.session_state.lon, st.session_state.dep = lat, lon, dep
-st.session_state.nx, st.session_state.nz, st.session_state.dx, st.session_state.dz = nx, nz, dx, dz
+st.session_state.nx, st.session_state.nz, st.session_state.dx = nx, nz, dx
 
 # Random seed
 st.divider()
@@ -382,8 +381,26 @@ if use_seed:
     )
     st.session_state.random_seed = random_seed
 
+with st.expander("Advanced options", expanded=False):
+    apply_dz = st.checkbox("Apply Dz scaling (convert to slip units)", value=True)
+    manual_dz = None
+    if apply_dz:
+        # Estimate Dz range from available values if present
+        default_dz = 1.0
+        if dz_by_key:
+            dz_vals = np.array(list(dz_by_key.values()), dtype=float)
+            dz_min = float(np.nanmin(dz_vals))
+            dz_max = float(np.nanmax(dz_vals))
+            manual_dz = st.slider("Dz", min_value=dz_min, max_value=dz_max, value=default_dz)
+        else:
+            manual_dz = st.number_input("Dz", value=default_dz)
+    
+    # If not applying Dz from slider/input, use default centered dataset value
+    idx_dz = FEATURE_NAMES.index('Dz')
+    actual_dz = manual_dz if manual_dz is not None else float((mins[idx_dz] + maxs[idx_dz]) / 2.0)
+
 # Compute all parameters
-computed_params = compute_parameters(mw, strk, dip, rake, lat, lon, dep, nx, nz, dx, dz, random_seed)
+computed_params = compute_parameters(mw, strk, dip, rake, lat, lon, dep, nx, nz, dx, actual_dz, random_seed)
 
 # Display computed parameters
 st.divider()
@@ -407,6 +424,7 @@ with st.expander("View computed values", expanded=True):
     # Debug: Show parameter ranges vs computed values
     with st.expander("Debug: Parameter ranges and normalization", expanded=False):
         st.text("Raw parameter values (before StandardScaler):")
+        
         for i, name in enumerate(FEATURE_NAMES):
             computed_val = computed_params[i]
             dataset_min = mins[i]
@@ -428,21 +446,6 @@ with st.expander("View computed values", expanded=True):
         st.text(f"Means: {scaler_means}")
         st.text(f"Stds: {scaler_stds}")
 
-
-with st.expander("Advanced options", expanded=False):
-    apply_dz = st.checkbox("Apply Dz scaling (convert to slip units)", value=True)
-    manual_dz = None
-    if apply_dz:
-        # Estimate Dz range from available values if present
-        default_dz = 10.0
-        if dz_by_key:
-            dz_vals = np.array(list(dz_by_key.values()), dtype=float)
-            dz_min = float(np.nanmin(dz_vals))
-            dz_max = float(np.nanmax(dz_vals))
-            manual_dz = st.slider("Dz", min_value=dz_min, max_value=dz_max, value=default_dz)
-        else:
-            manual_dz = st.number_input("Dz", value=default_dz)
-
 # Run the forward pass with computed parameters
 with st.spinner("Generating slip map..."):
     img = run_inference(computed_params, latent=latent, decoder=decoder, scaler_x=scaler_x, device=device)
@@ -452,9 +455,9 @@ if apply_dz and manual_dz is not None:
     # Lazy import to avoid circular imports
     from assets.utils import pixels_to_slip
     slip_img = pixels_to_slip(img, manual_dz, image_name=None, plot=False)
-    disp = slip_img * 100  # Convert meters to centimeters for display
+    disp = slip_img  # Convert meters to centimeters for display
     cmap = "viridis"
-    colorbar_label = "Slip (cm)"  # Display in centimeters
+    colorbar_label = "Slip (m)"  # Display in centimeters
     use_physical_coords = True
 else:
     disp = img
@@ -496,11 +499,13 @@ if use_physical_coords:
                           colors='black', linewidths=2, alpha=0.6)
     
     # Optionally add contour labels
-    ax.clabel(contours, inline=True, fontsize=8, fmt='%1.0f')
+    
+    ax.clabel(contours, inline=True, fontsize=15, fmt='%1.0f')
     
     # Set axis labels
-    ax.set_xlabel("Along-strike direction (km)", fontsize=12)
-    ax.set_ylabel("Down-dip direction (km)", fontsize=12)
+    ax.tick_params(axis='both', labelsize=22)
+    ax.set_xlabel("Along-strike direction (km)", fontsize=22)
+    ax.set_ylabel("Down-dip direction (km)", fontsize=22)
     
     # Set axis ticks
     ax.set_xticks(np.linspace(0, len_f_km, 5))
@@ -516,7 +521,9 @@ else:
 
 # Add colorbar
 cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-cbar.set_label(colorbar_label, fontsize=12)
+cbar.set_label(colorbar_label, fontsize=22)
+cbar.ax.tick_params(labelsize=22)
+
 
 # # Set title
 # if use_physical_coords:

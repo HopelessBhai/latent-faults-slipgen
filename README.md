@@ -1,14 +1,16 @@
-# LATENTFAULTS
+# latent-faults-slipgen
 
 <p align="center">
-  <b>LATENT-SPACE SURROGATE MODEL FOR EARTHQUAKE SLIP GENERATION</b><br/>
-  from sparse source parameters to 2D rupture fields
+  <b>latent-faults-slipgen</b><br/>
+  latent-space surrogate model for stochastic earthquake slip generation
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Repo-latent--faults--slipgen-111827?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Python-3.10%2B-111827?style=for-the-badge&logo=python" />
   <img src="https://img.shields.io/badge/PyTorch-2.x-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white" />
   <img src="https://img.shields.io/badge/Interface-Streamlit-ff4b4b?style=for-the-badge&logo=streamlit&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Domain-Seismology-0ea5e9?style=for-the-badge" />
 </p>
 
@@ -263,7 +265,7 @@ Expected artifacts:
 
 Use the repository link as the citation target for now:
 
-- [https://github.com/HopelessBhai/LatentFaults-Generative-Modeling-of-Earthquake-Ruptures-from-Sparse-Parameters](https://github.com/HopelessBhai/LatentFaults-Generative-Modeling-of-Earthquake-Ruptures-from-Sparse-Parameters)
+- [https://github.com/HopelessBhai/latent-faults-slipgen](https://github.com/HopelessBhai/latent-faults-slipgen)
 
 ---
 

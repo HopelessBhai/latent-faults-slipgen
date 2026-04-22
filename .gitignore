@@ -22,7 +22,6 @@ models/trial_*_decoder_model.pth
 # Analysis/experiment notebooks and scripts
 *.ipynb
 analyze_text_vec.py
-tune_mapper.py
 analysis.ipynb
 
 # Generated metrics/plots
@@ -43,6 +42,12 @@ Dataset/filtered_images_test/
 # Local docs and scratch notes
 help.txt
 Latent_Faults_Full_Manuscript.pdf
+CE6691 AND CE6692 FINAL PPT (1).pdf
+assets/earthquake_spread.png
+assets/publication_earthquake_map.pdf
+
+# Trained model binaries (configs are kept)
+models/*.pth
 
 # README visual assets (keep tracked)
 !report_pics/

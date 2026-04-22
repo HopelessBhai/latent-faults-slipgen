@@ -123,10 +123,7 @@ Required by training/inference scripts:
 - `assets/dz.json`
   - event key -> `Dz` value
 
-Optional preprocessing notebooks:
-- `Dataset/extracted_dataset/extract_fsp.ipynb`
-- `select_features_and_create_dz_json.ipynb`
-- `extract_image.ipynb`
+Preprocessing and exploratory notebooks are intentionally not tracked in this clean release branch.
 
 </details>
 

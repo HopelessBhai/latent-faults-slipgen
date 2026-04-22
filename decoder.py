@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import os
 import pickle
-from image_embedder import VQVAE  # Assumes PyTorch model is here
+from train_vqvae import VQVAE  # Assumes PyTorch model is here
 from assets.utils import save_metrics_for_image, pixels_to_slip
 import pandas as pd
 import io

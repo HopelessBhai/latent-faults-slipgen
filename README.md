@@ -94,9 +94,9 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # 3) training + inference
-python image_embedder.py
-python train_pipeline.py
-python inference_pipeline.py
+python train_vqvae.py
+python train_mapper_decoder.py
+python run_inference.py
 ```
 
 Interactive app:
@@ -136,7 +136,7 @@ Optional preprocessing notebooks:
 Run:
 
 ```bash
-python image_embedder.py
+python train_vqvae.py
 ```
 
 Expected artifacts:
@@ -151,7 +151,7 @@ Expected artifacts:
 Run:
 
 ```bash
-python tuning_pipeline.py
+python tune_mapper.py
 ```
 
 Expected artifact:
@@ -165,7 +165,7 @@ Expected artifact:
 Run:
 
 ```bash
-python train_pipeline.py
+python train_mapper_decoder.py
 ```
 
 Expected artifacts:
@@ -182,7 +182,7 @@ Expected artifacts:
 Run:
 
 ```bash
-python inference_pipeline.py
+python run_inference.py
 ```
 
 Expected artifacts:
@@ -199,12 +199,12 @@ Expected artifacts:
 
 | Category | Path(s) | Produced by |
 |---|---|---|
-| VQ-VAE weights | `models/vqvae_finetuned.pth` | `image_embedder.py` |
-| Image latent dictionary | `embeddings/image_latents.pkl` | `image_embedder.py` |
-| Mapper/decoder weights | `models/latent_model.pth`, `models/decoder_model.pth` | `train_pipeline.py` |
-| Input scaler | `scaler_x.pkl` | `train_pipeline.py` / `input_to_image_embedd.py` |
-| Inference arrays | `Dataset/slip_arrays_inference/` | `inference_pipeline.py` |
-| Evaluation dumps | `error_metrics/`, `test_metrics.json` | `decoder.py` / `inference_pipeline.py` |
+| VQ-VAE weights | `models/vqvae_finetuned.pth` | `train_vqvae.py` |
+| Image latent dictionary | `embeddings/image_latents.pkl` | `train_vqvae.py` |
+| Mapper/decoder weights | `models/latent_model.pth`, `models/decoder_model.pth` | `train_mapper_decoder.py` |
+| Input scaler | `scaler_x.pkl` | `train_mapper_decoder.py` / `latent_mapper.py` |
+| Inference arrays | `Dataset/slip_arrays_inference/` | `run_inference.py` |
+| Evaluation dumps | `error_metrics/`, `test_metrics.json` | `decoder.py` / `run_inference.py` |
 
 ---
 
@@ -212,9 +212,7 @@ Expected artifacts:
 
 ```text
 .
-├── Dataset/
-│   ├── srcmod2024-12-02FSP/
-│   └── extracted_dataset/
+├── Dataset/ (local only, ignored from git)
 ├── assets/
 │   ├── utils.py
 │   └── dz.json
@@ -222,10 +220,10 @@ Expected artifacts:
 │   ├── best_hyperparams.json
 │   ├── fixed_hyperparams.json
 │   └── fixed_hyperparams_manual.json
-├── image_embedder.py
-├── input_to_image_embedd.py
-├── train_pipeline.py
-├── inference_pipeline.py
+├── train_vqvae.py
+├── latent_mapper.py
+├── train_mapper_decoder.py
+├── run_inference.py
 ├── interactive_slip_app.py
 ├── decoder.py
 ├── requirements.txt
@@ -265,14 +263,9 @@ Expected artifacts:
 
 ## Citation
 
-```bibtex
-@article{nayak2026latentfaults,
-  title   = {Latent Faults: A Latent-Space Surrogate Model for Stochastic Earthquake Slip Generation from Sparse Source Parameters},
-  author  = {Nayak, Manish and Goswami, Atmadip and Neelamraju, Pavan Mohan and Raghukanth, STG},
-  journal = {Manuscript},
-  year    = {2026}
-}
-```
+Use the repository link as the citation target for now:
+
+- [https://github.com/HopelessBhai/LatentFaults-Generative-Modeling-of-Earthquake-Ruptures-from-Sparse-Parameters](https://github.com/HopelessBhai/LatentFaults-Generative-Modeling-of-Earthquake-Ruptures-from-Sparse-Parameters)
 
 ---
 

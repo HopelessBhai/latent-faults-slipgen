@@ -6,7 +6,7 @@ import torch
 import streamlit as st
 from typing import Dict, Tuple, List, Optional
 from scipy.stats import truncnorm
-from input_to_image_embedd import LatentNN
+from latent_mapper import LatentNN
 from decoder import Decoder
 
 # ------------------------------- constants -----------------------------------

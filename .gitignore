@@ -22,7 +22,7 @@ models/trial_*_decoder_model.pth
 # Analysis/experiment notebooks and scripts
 *.ipynb
 analyze_text_vec.py
-tuning_pipeline.py
+tune_mapper.py
 analysis.ipynb
 
 # Generated metrics/plots
@@ -33,6 +33,7 @@ parameter_distributions.png
 text_vec_analysis.npy
 
 # Generated inference/train outputs
+Dataset/
 Dataset/predicted_images*/
 Dataset/reconstructed_images/
 Dataset/slip_arrays_inference/

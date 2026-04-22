@@ -1,15 +1,48 @@
-.venv
-.vscode
-__pycache__
-temp_del
-models/keras_vqvae
-models/minilm
+.venv/
+myvenv/
+.vscode/
+__pycache__/
+*.pyc
+
+# Local temp files
+temp_del/
+tmp*/
+
+# Local model/cache artifacts
+models/keras_vqvae/
+models/minilm/
+pre-trained/
+hf-cache/
+embeddings/
+scaler_x.pkl
+embeddings/image_latents.pkl
+models/trial_*_latent_model.pth
+models/trial_*_decoder_model.pth
+
+# Analysis/experiment notebooks and scripts
+*.ipynb
+analyze_text_vec.py
+tuning_pipeline.py
 analysis.ipynb
+
+# Generated metrics/plots
+error_metrics/
+plots/
+test_metrics.json
+parameter_distributions.png
+text_vec_analysis.npy
+
+# Generated inference/train outputs
+Dataset/predicted_images*/
+Dataset/reconstructed_images/
+Dataset/slip_arrays_inference/
+Dataset/filtered_images_train/
+Dataset/filtered_images_test/
+
+# Local docs and scratch notes
 help.txt
-myvenv
-tmp_gqsgx2q
-tmp03yk_kon
-tmpbxxsdce0
-tmpi_dkfxv7
-tmpui5dopsb
-tmpfdaa0mp0
+Latent_Faults_Full_Manuscript.pdf
+
+# README visual assets (keep tracked)
+!report_pics/
+!report_pics/*.png

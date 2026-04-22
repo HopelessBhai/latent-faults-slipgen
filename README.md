@@ -223,6 +223,7 @@ Expected artifacts:
 ├── run_inference.py
 ├── interactive_slip_app.py
 ├── decoder.py
+├── LICENSE
 ├── requirements.txt
 └── README.md
 ```
@@ -268,5 +269,6 @@ Use the repository link as the citation target for now:
 
 ## License
 
-No explicit license file is currently present.
-Add `LICENSE` before public redistribution.
+This project is licensed under the **MIT License**.
+
+See `LICENSE` for full terms.
